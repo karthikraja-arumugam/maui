@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 		// _originalImageSize and _originalImageSource are used to ensure we don't resize the image
 		// larger than the original image size and to ensure if a new image is loaded, we use that image's size for resizing.
 		CGSize _originalImageSize = CGSize.Empty;
-		string _originalImageSource = string.Empty;
+		int _originalImageHash = int.MinValue;
 
 		/// <summary>
 		/// Measure the desired size of the button based on the image and title size taking into account
@@ -83,10 +83,12 @@ namespace Microsoft.Maui.Controls
 
 			if (image is not null)
 			{
+				var imageHash = image.GetHashCode();
+
 				// Save the original image size for later image resizing
-				if (_originalImageSize == CGSize.Empty || _originalImageSource == string.Empty || _originalImageSource != button.ImageSource.ToString())
+				if (_originalImageSize == CGSize.Empty || _originalImageHash == int.MinValue || _originalImageHash != imageHash)
 				{
-					_originalImageSource = button.ImageSource.ToString();
+					_originalImageHash = imageHash;
 					_originalImageSize = image.Size;
 				}
 
