@@ -91,13 +91,13 @@ interface DotNetInvokeResult {
         // Determine the function to use to send messages to the host application.
         if (window.chrome?.webview) {
             // Windows WebView2
-            sendMessageFunction = window.chrome.webview.postMessage;
+            sendMessageFunction = msg => window.chrome.webview.postMessage(msg);
         } else if (window.webkit?.messageHandlers?.webwindowinterop) {
             // iOS and MacCatalyst WKWebView
-            sendMessageFunction = window.webkit.messageHandlers.webwindowinterop.postMessage;
+            sendMessageFunction = msg => window.webkit.messageHandlers.webwindowinterop.postMessage(msg);
         } else if (window.hybridWebViewHost) {
             // Android WebView
-            sendMessageFunction = window.hybridWebViewHost.sendMessage;
+            sendMessageFunction = msg => window.hybridWebViewHost.sendMessage(msg);
         }
     }
 
