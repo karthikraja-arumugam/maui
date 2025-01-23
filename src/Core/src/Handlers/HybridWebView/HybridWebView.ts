@@ -55,7 +55,7 @@ interface DotNetInvokeResult {
 (() => {
 
     // Cached function to send messages to the host application.
-    let sendMessageFunction: (message: any) => void = null;
+    let sendMessageFunction: ((message: any) => void) | null = null;
 
     /*
      * Initialize the HybridWebView messaging system.
@@ -123,6 +123,41 @@ interface DotNetInvokeResult {
         const json = JSON.stringify(result);
 
         sendMessageToDotNet('__InvokeJavaScriptCompleted', taskId + '|' + json);
+    }
+
+    /*
+     * Send a message to the .NET host application indicating that a JavaScript method invocation failed.
+     * The error message is sent as a string with the following format: `<taskId>|<JSInvokeError>`.
+     */
+    function invokeJavaScriptFailedInDotNet(taskId: string, error: any) {
+        let errorObj: JSInvokeError;
+
+        if (!error) {
+            errorObj = {
+                Message: 'Unknown error',
+                StackTrace: Error().stack
+            };
+        } else if (error instanceof Error) {
+            errorObj = {
+                Name: error.name,
+                Message: error.message,
+                StackTrace: error.stack
+            };
+        } else if (typeof error === 'string') {
+            errorObj = {
+                Message: error,
+                StackTrace: Error().stack
+            };
+        } else {
+            errorObj = {
+                Message: JSON.stringify(error),
+                StackTrace: Error().stack
+            };
+        }
+
+        const json = JSON.stringify(errorObj);
+
+        sendMessageToDotNet('__InvokeJavaScriptFailed', taskId + '|' + json);
     }
 
     const HybridWebView = {
@@ -205,6 +240,7 @@ interface DotNetInvokeResult {
                 invokeJavaScriptCallbackInDotNet(taskId, result);
             } catch (ex) {
                 console.error(ex);
+                invokeJavaScriptFailedInDotNet(taskId, ex);
             }
         }
     };
