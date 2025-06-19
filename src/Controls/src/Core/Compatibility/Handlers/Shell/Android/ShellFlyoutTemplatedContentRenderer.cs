@@ -419,10 +419,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				// and propagate any margins set
 				if (_contentView?.PlatformView != null)
 				{
-					var dpWidth = _rootView.Context.FromPixels(_contentView.PlatformView.MeasuredWidth);
-					var dpHeight = _rootView.Context.FromPixels(_contentView.PlatformView.MeasuredHeight);
-					_contentView.View.Frame = _contentView.View.ComputeFrame(new Graphics.Rect(0, 0, dpWidth, dpHeight));
-
+					SetContentViewFrame();
 					cl.LeftMargin = (int)_rootView.Context.ToPixels(viewMargin.Left);
 					cl.TopMargin = (int)_rootView.Context.ToPixels(viewMargin.Top);
 					cl.RightMargin = (int)_rootView.Context.ToPixels(viewMargin.Right);
@@ -432,6 +429,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			return returnValue;
+		}
+
+		void SetContentViewFrame()
+		{
+			var dpWidth = _rootView.Context.FromPixels(_contentView.PlatformView.MeasuredWidth);
+			var dpHeight = _rootView.Context.FromPixels(_contentView.PlatformView.MeasuredHeight);
+			_contentView.View.Frame = _contentView.View.ComputeFrame(new Graphics.Rect(0, 0, dpWidth, dpHeight));
 		}
 
 		void OnFlyoutViewLayoutChanging()
@@ -463,6 +467,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UpdateFooterLayout();
 				UpdateContentPadding();
+			}
+			else if (_contentView?.PlatformView != null &&
+				(_contentView.PlatformView.MeasuredHeight > 0 && _contentView.View.Frame.Width == 0) ||
+				(_contentView.PlatformView.MeasuredWidth > 0 && _contentView.View.Frame.Height == 0))
+			{
+				{
+					SetContentViewFrame();
+				}
 			}
 		}
 
