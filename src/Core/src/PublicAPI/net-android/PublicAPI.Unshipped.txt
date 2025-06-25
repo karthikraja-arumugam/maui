@@ -1,1 +1,7 @@
 #nullable enable
+Microsoft.Maui.Platform.MauiStandaloneHorizontalScrollView
+Microsoft.Maui.Platform.MauiStandaloneHorizontalScrollView.MauiStandaloneHorizontalScrollView(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiStandaloneHorizontalScrollView.MauiStandaloneHorizontalScrollView(Android.Content.Context! context, Android.Util.IAttributeSet! attrs) -> void
+Microsoft.Maui.Platform.MauiStandaloneHorizontalScrollView.MauiStandaloneHorizontalScrollView(Android.Content.Context! context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiStandaloneHorizontalScrollView.MauiStandaloneHorizontalScrollView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+override Microsoft.Maui.Platform.MauiStandaloneHorizontalScrollView.OnInterceptTouchEvent(Android.Views.MotionEvent? ev) -> bool
