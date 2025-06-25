@@ -329,27 +329,35 @@ namespace Microsoft.Maui.Platform
 	internal class MauiHorizontalScrollView : HorizontalScrollView, IScrollBarView
 	{
 		readonly MauiScrollView? _parentScrollView;
+		float _downX;
+		float _downY;
+		readonly int _touchSlop;
 
 		protected MauiHorizontalScrollView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
 		{
+			_touchSlop = 20; // fallback value
 		}
 
 		public MauiHorizontalScrollView(Context? context, MauiScrollView parentScrollView) : base(context)
 		{
 			_parentScrollView = parentScrollView;
+			_touchSlop = ViewConfiguration.Get(context)?.ScaledTouchSlop ?? 20;
 			Tag = "Microsoft.Maui.Android.HorizontalScrollView";
 		}
 
 		public MauiHorizontalScrollView(Context? context, IAttributeSet? attrs) : base(context, attrs)
 		{
+			_touchSlop = ViewConfiguration.Get(context)?.ScaledTouchSlop ?? 20;
 		}
 
 		public MauiHorizontalScrollView(Context? context, IAttributeSet? attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
+			_touchSlop = ViewConfiguration.Get(context)?.ScaledTouchSlop ?? 20;
 		}
 
 		public MauiHorizontalScrollView(Context? context, IAttributeSet? attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
+			_touchSlop = ViewConfiguration.Get(context)?.ScaledTouchSlop ?? 20;
 		}
 
 		internal bool IsBidirectional { get; set; }
@@ -380,6 +388,31 @@ namespace Microsoft.Maui.Platform
 			// and I'm not sure it even applies. We need to determine whether touch events will get here at all if we've marked the ScrollView InputTransparent
 			// We _should_ be able to deal with it at the handler level by force-setting an OnTouchListener for the PlatformView that always returns false; then we
 			// can just stop worrying about it here because the touches _can't_ reach this.
+
+			// Handle touch events to prevent unintended focus behavior of child elements during scroll gestures
+			switch (ev.Action)
+			{
+				case MotionEventActions.Down:
+					_downX = ev.GetX();
+					_downY = ev.GetY();
+					break;
+
+				case MotionEventActions.Move:
+					float deltaX = Math.Abs(ev.GetX() - _downX);
+					float deltaY = Math.Abs(ev.GetY() - _downY);
+
+					// If horizontal movement exceeds vertical movement and touch slop threshold,
+					// intercept the touch to handle scrolling and prevent child focus issues
+					if (deltaX > _touchSlop && deltaX > deltaY)
+					{
+						return true;
+					}
+					break;
+
+				case MotionEventActions.Up:
+				case MotionEventActions.Cancel:
+					break;
+			}
 
 			// set the start point for the bidirectional scroll; 
 			// Down is swallowed by other controls, so we'll just sneak this in here without actually preventing
