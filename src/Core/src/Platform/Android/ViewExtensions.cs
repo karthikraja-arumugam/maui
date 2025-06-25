@@ -564,13 +564,16 @@ namespace Microsoft.Maui.Platform
 			{
 				if (!view.IsLoaded() && Looper.MyLooper() is Looper q)
 				{
-					new Handler(q).Post(() =>
+					// Avoid closure capture by using MainThread instead of Handler.Post
+					// This prevents memory leaks from Handler closures that can cause GC reference count issues
+					MainThread.InvokeOnMainThreadAsync(() =>
 					{
-						if (disposable is not null)
+						if (disposable is not null && view.IsLoaded())
+						{
 							action.Invoke();
-
-						disposable?.Dispose();
-						disposable = null;
+							disposable.Dispose();
+							disposable = null;
+						}
 					});
 
 					return;
@@ -606,13 +609,16 @@ namespace Microsoft.Maui.Platform
 				// detached from the window
 				if (view.IsLoaded() && Looper.MyLooper() is Looper q)
 				{
-					new Handler(q).Post(() =>
+					// Avoid closure capture by using MainThread instead of Handler.Post
+					// This prevents memory leaks from Handler closures that can cause GC reference count issues
+					MainThread.InvokeOnMainThreadAsync(() =>
 					{
-						if (disposable is not null)
+						if (disposable is not null && !view.IsLoaded())
+						{
 							action.Invoke();
-
-						disposable?.Dispose();
-						disposable = null;
+							disposable.Dispose();
+							disposable = null;
+						}
 					});
 
 					return;
