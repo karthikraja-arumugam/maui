@@ -10,11 +10,23 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateVerticalScrollBarVisibility(this UIScrollView scrollView, ScrollBarVisibility scrollBarVisibility)
 		{
 			scrollView.ShowsVerticalScrollIndicator = scrollBarVisibility == ScrollBarVisibility.Always || scrollBarVisibility == ScrollBarVisibility.Default;
+			
+			// Handle always-visible behavior for MauiScrollView
+			if (scrollView is MauiScrollView mauiScrollView)
+			{
+				mauiScrollView.SetAlwaysShowVerticalScrollbar(scrollBarVisibility == ScrollBarVisibility.Always);
+			}
 		}
 
 		public static void UpdateHorizontalScrollBarVisibility(this UIScrollView scrollView, ScrollBarVisibility scrollBarVisibility)
 		{
 			scrollView.ShowsHorizontalScrollIndicator = scrollBarVisibility == ScrollBarVisibility.Always || scrollBarVisibility == ScrollBarVisibility.Default;
+			
+			// Handle always-visible behavior for MauiScrollView
+			if (scrollView is MauiScrollView mauiScrollView)
+			{
+				mauiScrollView.SetAlwaysShowHorizontalScrollbar(scrollBarVisibility == ScrollBarVisibility.Always);
+			}
 		}
 
 
