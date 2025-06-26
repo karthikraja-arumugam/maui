@@ -177,6 +177,12 @@ namespace Microsoft.Maui.Platform
 			{
 				UpdateScrollbarVisibilityTimer();
 			}
+			// Stop the timer when moving away from a window to save resources
+			else if (Window == null && _scrollbarVisibilityTimer != null)
+			{
+				_scrollbarVisibilityTimer.Invalidate();
+				_scrollbarVisibilityTimer = null;
+			}
 		}
 
 		internal void SetAlwaysShowVerticalScrollbar(bool alwaysShow)
@@ -201,8 +207,9 @@ namespace Microsoft.Maui.Platform
 					// This keeps them visible when set to "Always" while being less resource intensive
 					_scrollbarVisibilityTimer = NSTimer.CreateRepeatingScheduledTimer(1.5, _ => 
 					{
-						// Only flash if the scroll view is actually scrollable
-						if (ContentSize.Width > Frame.Size.Width || ContentSize.Height > Frame.Size.Height)
+						// Only flash if the scroll view is in the view hierarchy and actually scrollable
+						if (Window != null && 
+							(ContentSize.Width > Frame.Size.Width || ContentSize.Height > Frame.Size.Height))
 						{
 							FlashScrollIndicators();
 						}
