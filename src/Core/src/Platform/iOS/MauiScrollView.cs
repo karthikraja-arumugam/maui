@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -15,6 +16,11 @@ namespace Microsoft.Maui.Platform
 		double _lastArrangeWidth;
 
 		UIUserInterfaceLayoutDirection? _previousEffectiveUserInterfaceLayoutDirection;
+
+		// Fields for scrollbar always-visible functionality
+		NSTimer? _scrollbarVisibilityTimer;
+		bool _alwaysShowVerticalScrollbar;
+		bool _alwaysShowHorizontalScrollbar;
 
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
@@ -165,6 +171,65 @@ namespace Microsoft.Maui.Platform
 				_invalidateParentWhenMovedToWindow = false;
 				this.InvalidateAncestorsMeasures();
 			}
+
+			// Restart the timer when moving to a new window to ensure proper behavior
+			if (Window != null && (_alwaysShowVerticalScrollbar || _alwaysShowHorizontalScrollbar))
+			{
+				UpdateScrollbarVisibilityTimer();
+			}
+		}
+
+		internal void SetAlwaysShowVerticalScrollbar(bool alwaysShow)
+		{
+			_alwaysShowVerticalScrollbar = alwaysShow;
+			UpdateScrollbarVisibilityTimer();
+		}
+
+		internal void SetAlwaysShowHorizontalScrollbar(bool alwaysShow)
+		{
+			_alwaysShowHorizontalScrollbar = alwaysShow;
+			UpdateScrollbarVisibilityTimer();
+		}
+
+		void UpdateScrollbarVisibilityTimer()
+		{
+			if (_alwaysShowVerticalScrollbar || _alwaysShowHorizontalScrollbar)
+			{
+				if (_scrollbarVisibilityTimer == null)
+				{
+					// Use a timer interval of 1.5 seconds to periodically flash the scroll indicators
+					// This keeps them visible when set to "Always" while being less resource intensive
+					_scrollbarVisibilityTimer = NSTimer.CreateRepeatingScheduledTimer(1.5, _ => 
+					{
+						// Only flash if the scroll view is actually scrollable
+						if (ContentSize.Width > Frame.Size.Width || ContentSize.Height > Frame.Size.Height)
+						{
+							FlashScrollIndicators();
+						}
+					});
+				}
+			}
+			else
+			{
+				if (_scrollbarVisibilityTimer != null)
+				{
+					_scrollbarVisibilityTimer.Invalidate();
+					_scrollbarVisibilityTimer = null;
+				}
+			}
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				if (_scrollbarVisibilityTimer != null)
+				{
+					_scrollbarVisibilityTimer.Invalidate();
+					_scrollbarVisibilityTimer = null;
+				}
+			}
+			base.Dispose(disposing);
 		}
 	}
 }
