@@ -59,6 +59,37 @@ public static class DatePickerExtensions
 			{
 				picker.SetDate(targetDate.ToNSDate(), false);
 			}
+
+			if (datePicker.Date is null)
+			{
+				if (picker.IsLoaded())
+				{
+					FindAndClearTextField(picker);
+				}
+				else
+				{
+					picker.OnLoaded(() =>
+					{
+						FindAndClearTextField(picker);
+					});
+				}
+			}
+		}
+	}
+
+	static void FindAndClearTextField(UIView view)
+	{
+		foreach (var subview in view.Subviews)
+		{
+			foreach (var subview1 in subview.Subviews)
+			{
+				if (subview1 is UITextField textField)
+				{
+					textField.Text = string.Empty;
+					if (textField.IsFirstResponder)
+						textField.ResignFirstResponder();
+				}
+			}
 		}
 	}
 
