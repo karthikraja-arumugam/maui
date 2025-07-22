@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 
 			_proxy.SetVirtualView(PlatformView);
+			PlatformView?.SetEntryView(VirtualView);
 		}
 
 		protected override void ConnectHandler(MauiTextView platformView)
@@ -51,6 +52,8 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiTextView platformView)
 		{
 			_proxy.Disconnect(platformView);
+
+			platformView.SetEntryView(null);
 		}
 
 		public override bool NeedsContainer
@@ -109,6 +112,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdatePlaceholder(editor);
 			handler.UpdateValue(nameof(IEditor.CharacterSpacing));
+			if (handler.PlatformView != null && handler.PlatformView.IsLoaded())
+			{
+				editor?.InvalidateMeasure();
+			}
 		}
 
 		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor) =>

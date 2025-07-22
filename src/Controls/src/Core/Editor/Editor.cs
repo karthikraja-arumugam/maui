@@ -130,6 +130,11 @@ namespace Microsoft.Maui.Controls
 			(this as IEditorController).SendCompleted();
 		}
 
+		bool IEditor.IsAutoSize()
+		{
+			return AutoSize == EditorAutoSizeOption.TextChanges;
+		}
+
 		protected override Size ArrangeOverride(Rect bounds)
 		{
 			_previousBounds = bounds;

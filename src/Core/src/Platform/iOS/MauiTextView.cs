@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Platform
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		readonly MauiLabel _placeholderLabel;
 		nfloat? _defaultPlaceholderSize;
+		WeakReference<IEditor>? _virtualView;
 
 		public MauiTextView()
 		{
@@ -27,6 +28,11 @@ namespace Microsoft.Maui.Platform
 			_placeholderLabel = InitPlaceholderLabel();
 			UpdatePlaceholderLabelFrame();
 			Changed += OnChanged;
+		}
+
+		internal void SetEntryView(IEditor? editor)
+		{
+			_virtualView = editor != null ? new WeakReference<IEditor>(editor) : null;
 		}
 
 		public override void WillMoveToWindow(UIWindow? window)
@@ -147,6 +153,22 @@ namespace Microsoft.Maui.Platform
 
 				_placeholderLabel.Frame = new CGRect(x, y, width, height);
 			}
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override CGSize SizeThatFits(CGSize size)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			var textSize = base.SizeThatFits(size);
+			if (string.IsNullOrEmpty(Text) && !string.IsNullOrEmpty(_placeholderLabel?.Text) &&
+			_virtualView?.TryGetTarget(out var editor) == true && editor.IsAutoSize())
+			{
+				var placeholderSize = _placeholderLabel.SizeThatFits(new CGSize(size.Width, nfloat.MaxValue));
+				var totalHeight = placeholderSize.Height + TextContainerInset.Top + TextContainerInset.Bottom;
+				return new CGSize(placeholderSize.Width, totalHeight);
+			}
+
+			return textSize;
 		}
 
 		void HidePlaceholderIfTextIsPresent(string? value)
