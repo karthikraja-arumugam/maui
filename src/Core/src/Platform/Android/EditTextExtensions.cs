@@ -46,6 +46,15 @@ namespace Microsoft.Maui.Platform
 				if (PlatformInterop.CreateEditTextColorStateList(editText.TextColors, textColor.ToPlatform()) is ColorStateList c)
 					editText.SetTextColor(c);
 			}
+
+		}
+
+		internal static void UpdateClearButtonColor(this EditText editText, Graphics.Color textColor, Drawable? clearButtonDrawable)
+		{
+			if (textColor is not null)
+				clearButtonDrawable?.SetColorFilter(textColor.ToPlatform(), FilterMode.SrcIn);
+			else
+				clearButtonDrawable?.ClearColorFilter();
 		}
 
 		public static void UpdateIsPassword(this EditText editText, IEntry entry)
