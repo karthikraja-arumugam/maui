@@ -52,42 +52,49 @@ public static class DatePickerExtensions
 
 	public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
 	{
-		if (picker is not null)
+		if (picker is null)
 		{
-			var targetDate = datePicker.Date ?? DateTime.Today;
-			if (picker.Date.ToDateTime() != targetDate)
-			{
-				picker.SetDate(targetDate.ToNSDate(), false);
-			}
+			return;
+		}
 
-			if (datePicker.Date is null)
+		var targetDate = datePicker.Date ?? DateTime.Now;
+		if (picker.Date.ToDateTime() != targetDate)
+		{
+			picker.SetDate(targetDate.ToNSDate(), false);
+		}
+
+		if (datePicker.Date is null)
+		{
+			// Clear the text fields to indicate no date is selected
+			if (picker.IsLoaded())
 			{
-				if (picker.IsLoaded())
+				ClearDateTextFields(picker);
+			}
+			else
+			{
+				picker.OnLoaded(() =>
 				{
-					FindAndClearTextField(picker);
-				}
-				else
-				{
-					picker.OnLoaded(() =>
-					{
-						FindAndClearTextField(picker);
-					});
-				}
+					ClearDateTextFields(picker);
+				});
 			}
 		}
 	}
 
-	static void FindAndClearTextField(UIView view)
+	static void ClearDateTextFields(UIView view)
 	{
 		foreach (var subview in view.Subviews)
 		{
-			foreach (var subview1 in subview.Subviews)
+			foreach (var dateFields in subview.Subviews)
 			{
-				if (subview1 is UITextField textField)
+				if (dateFields is UITextField textField)
 				{
 					textField.Text = string.Empty;
+
+					// Selections remains even after clearing the text, so we need to resign first responder
 					if (textField.IsFirstResponder)
+					{
 						textField.ResignFirstResponder();
+					}
 				}
 			}
 		}
