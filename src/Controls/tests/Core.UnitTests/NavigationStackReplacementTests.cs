@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			
 			// Step 1: Navigate from MainPage to DeviceSelectionPage
 			await navigationPage.PushAsync(deviceSelectionPage);
+			await navigationPage.NavigatingTask;
 			
 			Assert.Equal(1, deviceSelectionPage.AppearingCount);
 			Assert.Equal(0, deviceSelectionPage.DisappearingCount);
@@ -29,6 +30,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// This simulates "replacing the navigation stack"
 			navigationPage.Navigation.InsertPageBefore(settingsPage, deviceSelectionPage);
 			await navigationPage.PopAsync(false); // Remove deviceSelectionPage
+			await navigationPage.NavigatingTask;
 			
 			// Verify that DeviceSelectionPage disappearing was called
 			Assert.Equal(1, deviceSelectionPage.DisappearingCount);
@@ -39,6 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			
 			// Step 3: Navigate back to MainPage - this should NOT call OnAppearing on DeviceSelectionPage
 			await navigationPage.PopToRootAsync();
+			await navigationPage.NavigatingTask;
 			
 			// Verify that DeviceSelectionPage OnAppearing was NOT called again
 			Assert.Equal(initialDeviceSelectionAppearingCount, deviceSelectionPage.AppearingCount);
@@ -61,6 +64,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Push two pages
 			await navigationPage.PushAsync(middlePage);
 			await navigationPage.PushAsync(topPage);
+			await navigationPage.NavigatingTask;
 			
 			Assert.Equal(1, middlePage.AppearingCount);
 			Assert.Equal(1, topPage.AppearingCount);
