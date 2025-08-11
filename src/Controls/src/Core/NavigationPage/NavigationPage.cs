@@ -836,6 +836,16 @@ namespace Microsoft.Maui.Controls
 					{
 						Owner.SendNavigating(previousPage);
 						Owner.FireDisappearing(previousPage);
+						
+						// Ensure all removed pages (except the current one already handled above) get proper lifecycle cleanup
+						foreach (var page in pagesToRemove)
+						{
+							if (page != previousPage)
+							{
+								Owner.FireDisappearing(page);
+							}
+						}
+						
 						Owner.FireAppearing(newPage);
 					},
 					() =>
