@@ -2,3 +2,5 @@
 -keep public class * extends com.bumptech.glide.module.LibraryGlideModule
 -keep class com.bumptech.glide.GeneratedAppGlideModuleImpl
 -keep class com.microsoft.maui.MauiGlideModule
+-keep class com.microsoft.maui.ImageLoaderCallback { *; }
+-keep class com.microsoft.maui.glide.** { *; }
