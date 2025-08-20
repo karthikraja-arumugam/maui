@@ -46,6 +46,7 @@ import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.signature.ObjectKey;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -297,12 +298,12 @@ public class PlatformInterop {
     }
 
     private static void prepare(RequestBuilder<Drawable> builder, MauiTarget target, boolean cachingEnabled, ImageLoaderCallback callback) {
-        // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
+        // Work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
-        // Adding this "error image" that will always load a null image makes each request unique,
+        // Using a unique signature based on the callback instance to make each request unique,
         // but does not affect the various caching levels.
         builder = builder
-            .error(callback);
+            .signature(new ObjectKey(callback));
 
         if (!cachingEnabled) {
             builder = builder

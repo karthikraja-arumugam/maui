@@ -384,3 +384,5 @@ snapshots-diff/
 temp
 .packages
 /src/Templates/.tempTemplateOutput
+*.html
+build/reports/
