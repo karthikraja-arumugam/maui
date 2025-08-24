@@ -515,7 +515,12 @@ namespace Microsoft.Maui.Controls
 
 			while (InternalChildren.Count > newStack.Count)
 			{
+				var removedPage = InternalChildren[InternalChildren.Count - 1] as Page;
 				InternalChildren.RemoveAt(InternalChildren.Count - 1);
+				
+				// Ensure removed pages get proper lifecycle cleanup
+				// SendDisappearing will check if the page has appeared and only call disappearing if needed
+				removedPage?.SendDisappearing();
 			}
 		}
 
@@ -850,6 +855,16 @@ namespace Microsoft.Maui.Controls
 					{
 						Owner.SendNavigating(previousPage);
 						Owner.FireDisappearing(previousPage);
+						
+						// Ensure all removed pages (except the current one already handled above) get proper lifecycle cleanup
+						foreach (var page in pagesToRemove)
+						{
+							if (page != previousPage)
+							{
+								Owner.FireDisappearing(page);
+							}
+						}
+						
 						Owner.FireAppearing(newPage);
 					},
 					() =>
@@ -912,6 +927,9 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
+						// Ensure removed page gets proper lifecycle cleanup
+						// SendDisappearing will check if the page has appeared and only call disappearing if needed
+						page.SendDisappearing();
 					},
 					() =>
 					{
