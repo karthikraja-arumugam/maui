@@ -184,9 +184,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var contentSize = Controller.GetSize();
 
-			// If contentSize comes back null, it means none of the content has been realized yet;
-			// we need to return the expansive size the collection view wants by default to get
-			// it to start measuring its content
+			// Check if there are any items in the collection first
+			var totalItems = 0;
+			if (Controller?.CollectionView is not null)
+			{
+				var collectionView = Controller.CollectionView;
+				var numberOfSections = collectionView.NumberOfSections();
+
+				for (nint section = 0; section < numberOfSections; section++)
+				{
+					totalItems += (int)collectionView.NumberOfItemsInSection(section);
+				}
+			}
+
+			IView virtualView = VirtualView;
+			// If no items, return minimal size for Auto sizing to work properly
+			if (totalItems == 0)
+			{
+
+				// Use minimum height request if specified, otherwise minimal size
+				var minHeight = virtualView.MinimumHeight > 0 ? virtualView.MinimumHeight : 0;
+				var minWidth = virtualView.MinimumWidth > 0 ? virtualView.MinimumWidth : 0;
+
+				return new Size(
+					ViewHandlerExtensions.ResolveConstraints(minWidth, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth),
+					ViewHandlerExtensions.ResolveConstraints(minHeight, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight)
+				);
+			}
+
+			// If contentSize comes back empty/zero but we have items, fall back to base implementation
 			if (contentSize.Height == 0 || contentSize.Width == 0)
 			{
 				return base.GetDesiredSize(widthConstraint, heightConstraint);
@@ -195,8 +221,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// Our target size is the smaller of it and the constraints
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
 			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
-
-			IView virtualView = VirtualView;
 
 			width = ViewHandlerExtensions.ResolveConstraints(width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
 			height = ViewHandlerExtensions.ResolveConstraints(height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
