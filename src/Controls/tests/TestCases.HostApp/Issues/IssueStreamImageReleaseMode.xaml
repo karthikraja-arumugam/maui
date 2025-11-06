@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.IssueStreamImageReleaseMode"
+             x:DataType="local:IssueStreamImageReleaseMode">
+
+  <VerticalStackLayout Padding="20" Spacing="20">
+    <Label AutomationId="TestInstructions" FontAttributes="Bold"
+           Text="Instructions: Click 'Update Image' button multiple times. The image should change each time, showing it works correctly in both Debug and Release builds."/>
+    
+    <Image x:Name="testImage" 
+           AutomationId="TestImage"
+           WidthRequest="200" 
+           HeightRequest="200" 
+           BackgroundColor="LightGray"
+           HorizontalOptions="Center" />
+    
+    <Button AutomationId="UpdateImageButton" 
+            Text="Update Image" 
+            Clicked="OnUpdateImageClicked"/>
+    
+    <Label AutomationId="StatusLabel" 
+           x:Name="statusLabel"
+           Text="Ready to test" 
+           HorizontalOptions="Center"/>
+  </VerticalStackLayout>
+</ContentPage>
