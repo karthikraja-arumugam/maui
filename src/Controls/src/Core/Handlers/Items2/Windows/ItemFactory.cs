@@ -53,7 +53,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					if (_view.Handler?.MauiContext is not null && viewContent is not null)
 					{
 						wrapper = new ElementWrapper(_view.Handler.MauiContext);
-						//wrapper.HorizontalAlignment = HorizontalAlignment.Center;
+						wrapper.HorizontalAlignment = HorizontalAlignment.Stretch;
+						wrapper.HorizontalContentAlignment = HorizontalAlignment.Stretch;
 						wrapper.SetContent(viewContent);
 
 						if (wrapper?.VirtualView is View virtualView)
@@ -72,7 +73,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				container ??= new ItemContainer()
 				{
 					Child = wrapper,
-					HorizontalAlignment = HorizontalAlignment.Left
+					HorizontalAlignment = HorizontalAlignment.Stretch
 					// CanUserSelect = !templateContext.IsHeader // 1.6 feature
 				};
 
