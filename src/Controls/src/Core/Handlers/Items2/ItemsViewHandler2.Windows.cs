@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -222,10 +223,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			CleanUpCollectionViewSource();
 
-			if (Element.ItemsSource is null)
-			{
-				return;
-			}
+			
 
 			_collectionViewSource = CreateCollectionViewSource();
 			_itemsSource = _collectionViewSource?.Source as IList;
@@ -290,7 +288,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			UpdateEmptyViewVisibility();
 
-			if (_itemsSource is null || _itemsSource.Count == 0)
+			VirtualView.Dispatcher.DispatchAsync(() => ApplyItemsUpdatingScrollMode());
+		}
+
+		void ApplyItemsUpdatingScrollMode()
+		{
+			if (_itemsSource is null || _itemsSource.Count == 0 || _collectionViewSource?.View?.Count <= 1)
 			{
 				return;
 			}
@@ -476,25 +479,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var emptyView = Element.EmptyView;
 
-			if (emptyView is null)
+			var emptyViewTemplate = Element.EmptyViewTemplate;
+			if (emptyViewTemplate is not null)
 			{
-				return;
+				// If EmptyViewTemplate is provided, use it instead of EmptyView
+				_emptyView = RealizeEmptyViewTemplate(emptyView, emptyViewTemplate);
+			}
+			else if (emptyView is not null)
+			{
+				switch (emptyView)
+				{
+					case string text:
+						_emptyView = new TextBlock
+						{
+							HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+							VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+							Text = text
+						};
+						break;
+					case View view:
+						_emptyView = RealizeEmptyView(view);
+						break;
+					default:
+						_emptyView = RealizeEmptyViewTemplate(emptyView, null); // Fallback
+						break;
+				}
 			}
 
-			_emptyView = emptyView switch
-			{
-				string text => new TextBlock
-				{
-					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = text
-				},
-				View view => RealizeEmptyView(view),
-				_ => RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate),
-			};
-
 			(PlatformView as IEmptyView)?.SetEmptyView(_emptyView, _mauiEmptyView);
-
 			UpdateEmptyViewVisibility();
 		}
 
@@ -522,7 +534,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (_emptyView is not null && PlatformView is IEmptyView emptyView)
 				{
 					emptyView.EmptyViewVisibility = WVisibility.Visible;
-
 					if (PlatformView.ActualWidth >= 0 && PlatformView.ActualHeight >= 0)
 					{
 						_mauiEmptyView?.Arrange(new Rect(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
@@ -683,7 +694,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var handler = view.ToHandler(MauiContext);
 			var platformView = handler.ContainerView ?? handler.PlatformView;
-
 			return platformView;
 		}
 
