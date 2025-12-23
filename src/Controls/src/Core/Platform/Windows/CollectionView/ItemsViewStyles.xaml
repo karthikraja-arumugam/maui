@@ -270,7 +270,6 @@
                              BorderThickness="{TemplateBinding BorderThickness}"
                              CornerRadius="{TemplateBinding CornerRadius}"
                              HorizontalAnchorRatio="NaN"
-                             
                              TabNavigation="{TemplateBinding TabNavigation}"
                              XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}">
         <controls:StackPanel x:Name="PART_ContainerGrid">
@@ -279,7 +278,6 @@
                             VerticalContentAlignment="Stretch" />
             
             <controls:ItemsRepeater x:Name="PART_ItemsRepeater"
-                                    
                                     ItemTransitionProvider="{TemplateBinding ItemTransitionProvider}"
                                     HorizontalCacheLength="0"
                                     ItemsSource="{TemplateBinding ItemsSource}"
@@ -297,7 +295,7 @@
         </controls:ScrollView>
         <ContentControl x:Name="EmptyViewContentControl"
                         HorizontalContentAlignment="Stretch"
-                        VerticalAlignment="Stretch" />
+                        VerticalContentAlignment="Stretch" />
       </Grid>
     </ControlTemplate>
 

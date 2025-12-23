@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 
@@ -17,6 +18,7 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly IList _groupList;
 		readonly NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
+		readonly Dictionary<object, WeakNotifyCollectionChangedProxy> _groupItemProxies = new();
 		bool _disposedValue;
 
 		~GroupedItemTemplateCollection() => _proxy?.Unsubscribe();
@@ -35,6 +37,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var groupTemplateContext = CreateGroupTemplateContext(group);
 				Add(groupTemplateContext);
+				SubscribeToGroupItems(group, groupTemplateContext);
 			}
 
 			if (_itemsSource is IList groupList && _itemsSource is INotifyCollectionChanged incc)
@@ -53,6 +56,11 @@ namespace Microsoft.Maui.Controls.Platform
 				if (disposing)
 				{
 					_proxy?.Unsubscribe();
+					foreach (var proxy in _groupItemProxies.Values)
+					{
+						proxy.Unsubscribe();
+					}
+					_groupItemProxies.Clear();
 				}
 				_disposedValue = true;
 			}
@@ -76,6 +84,46 @@ namespace Microsoft.Maui.Controls.Platform
 			var groupItemsList = TemplatedItemSourceFactory.Create(group as IEnumerable, _itemTemplate, _container, mauiContext: _mauiContext);
 
 			return new GroupTemplateContext(groupHeaderTemplateContext, groupFooterTemplateContext, groupItemsList);
+		}
+
+		void SubscribeToGroupItems(object group, GroupTemplateContext groupTemplateContext)
+		{
+			if (group is INotifyCollectionChanged incc)
+			{
+				if (!_groupItemProxies.ContainsKey(group))
+				{
+					var proxy = new WeakNotifyCollectionChangedProxy();
+					proxy.Subscribe(incc, (s, e) => GroupItemsChanged(group, groupTemplateContext, e));
+					_groupItemProxies[group] = proxy;
+				}
+			}
+		}
+
+		void UnsubscribeFromGroupItems(object group)
+		{
+			if (_groupItemProxies.TryGetValue(group, out var proxy))
+			{
+				proxy.Unsubscribe();
+				_groupItemProxies.Remove(group);
+			}
+		}
+
+		void GroupItemsChanged(object group, GroupTemplateContext groupTemplateContext, NotifyCollectionChangedEventArgs args)
+		{
+			// Re-create the group's items list and update the GroupTemplateContext
+			var newItemsList = TemplatedItemSourceFactory.Create(group as IEnumerable, _itemTemplate, _container, mauiContext: _mauiContext);
+			var newGroupTemplateContext = new GroupTemplateContext(
+				groupTemplateContext.HeaderItemTemplateContext,
+				groupTemplateContext.FooterItemTemplateContext,
+				newItemsList);
+
+			int index = IndexOf(groupTemplateContext);
+			if (index >= 0)
+			{
+				Items[index] = newGroupTemplateContext;
+				var update = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newGroupTemplateContext, groupTemplateContext, index);
+				OnCollectionChanged(update);
+			}
 		}
 
 		void GroupsChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -113,7 +161,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			for (int n = 0; n < count; n++)
 			{
-				Insert(startIndex, CreateGroupTemplateContext(args.NewItems[n]));
+				var group = args.NewItems[n];
+				var groupTemplateContext = CreateGroupTemplateContext(group);
+				Insert(startIndex, groupTemplateContext);
+				SubscribeToGroupItems(group, groupTemplateContext);
 			}
 		}
 
@@ -153,6 +204,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			for (int n = startIndex + count - 1; n >= startIndex; n--)
 			{
+				var group = args.OldItems[n - startIndex];
+				UnsubscribeFromGroupItems(group);
 				RemoveAt(n);
 			}
 		}
@@ -167,8 +220,11 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var index = args.OldStartingIndex + n;
 					var oldItem = this[index];
-					var newItem = CreateGroupTemplateContext(args.NewItems[0]);
+					var newGroup = args.NewItems[n];
+					UnsubscribeFromGroupItems(oldItem);
+					var newItem = CreateGroupTemplateContext(newGroup);
 					Items[index] = newItem;
+					SubscribeToGroupItems(newGroup, newItem);
 					var update = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, newItem, oldItem, index);
 					OnCollectionChanged(update);
 				}
@@ -183,12 +239,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void Reset()
 		{
+			foreach (var item in Items)
+			{
+				UnsubscribeFromGroupItems(item);
+			}
 			Items.Clear();
 
 			foreach (var group in _itemsSource)
 			{
 				var groupTemplateContext = CreateGroupTemplateContext(group);
 				Items.Add(groupTemplateContext);
+				SubscribeToGroupItems(group, groupTemplateContext);
 			}
 
 			var reset = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);

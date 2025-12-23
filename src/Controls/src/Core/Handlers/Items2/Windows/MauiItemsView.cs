@@ -168,7 +168,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ApplyLayoutOrientation();
 		}
 
-
 		void ApplyLayoutOrientation()
 		{
 			if (_containerPanel is null || _headerContentControl is null || _footerContentControl is null || _itemsRepeater is null)
@@ -180,22 +179,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				_containerPanel.Orientation = Orientation.Horizontal;
 				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
-				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Center;
-				_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
-				_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
+				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Left;
+				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
+				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Left;
 			}
 			else
 			{
 				_containerPanel.Orientation = Orientation.Vertical;
-
-				// In vertical layout, stretch all horizontally
-				_headerContentControl.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Top;
 				_itemsRepeater.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-				_footerContentControl.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-				_headerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Center;
-				_itemsRepeater.VerticalAlignment = UI.Xaml.VerticalAlignment.Center;
-				_footerContentControl.VerticalAlignment = UI.Xaml.VerticalAlignment.Center;
+				_headerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+				_headerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+				_footerContentControl.VerticalContentAlignment = UI.Xaml.VerticalAlignment.Top;
+				_footerContentControl.HorizontalContentAlignment = UI.Xaml.HorizontalAlignment.Stretch;
 			}
+		}
+
+		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+		{
+			_mauiEmptyView?.Measure(availableSize.Width, availableSize.Height);
+
+			return base.MeasureOverride(availableSize);
 		}
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
