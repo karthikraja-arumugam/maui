@@ -534,10 +534,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (_emptyView is not null && PlatformView is IEmptyView emptyView)
 				{
 					emptyView.EmptyViewVisibility = WVisibility.Visible;
-					if (PlatformView.ActualWidth >= 0 && PlatformView.ActualHeight >= 0)
-					{
-						_mauiEmptyView?.Arrange(new Rect(0, 0, PlatformView.ActualWidth, PlatformView.ActualHeight));
-					}
 				}
 
 				_emptyViewDisplayed = true;

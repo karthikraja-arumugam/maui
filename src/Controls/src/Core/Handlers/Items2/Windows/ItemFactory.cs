@@ -74,10 +74,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					Child = wrapper,
 					HorizontalAlignment = HorizontalAlignment.Stretch
-					// CanUserSelect = !templateContext.IsHeader // 1.6 feature
 				};
 
-				container.IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter;
 				return container;
 			}
 
