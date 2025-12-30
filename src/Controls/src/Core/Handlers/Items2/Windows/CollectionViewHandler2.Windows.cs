@@ -23,6 +23,8 @@ public partial class CollectionViewHandler2
 	{
 		[ReorderableItemsView.CanReorderItemsProperty.PropertyName] = MapCanReorderItems,
 		[GroupableItemsView.IsGroupedProperty.PropertyName] = MapIsGrouped,
+		[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapGroupHeaderTemplate,
+		[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapGroupFooterTemplate,
 		[SelectableItemsView.SelectedItemProperty.PropertyName] = MapSelectedItem,
 		[SelectableItemsView.SelectedItemsProperty.PropertyName] = MapSelectedItems,
 		[SelectableItemsView.SelectionModeProperty.PropertyName] = MapSelectionMode,
@@ -43,6 +45,17 @@ public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItems
 	{
 		handler.UpdateItemsSource();
 	}
+
+	public static void MapGroupHeaderTemplate(CollectionViewHandler2 handler, GroupableItemsView itemsView)
+	{
+		handler.UpdateItemsSource();
+	}
+
+	public static void MapGroupFooterTemplate(CollectionViewHandler2 handler, GroupableItemsView itemsView)
+	{
+		handler.UpdateItemsSource();
+	}
+
 
 	public static void MapItemsSource(CollectionViewHandler2 handler, SelectableItemsView itemsView)
 	{
